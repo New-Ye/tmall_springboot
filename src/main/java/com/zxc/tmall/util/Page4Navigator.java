@@ -25,9 +25,9 @@ public class Page4Navigator<T> {
 
     boolean last;
 
-    boolean isHasNext;
+    boolean isHasNext;//是否有下一页
 
-    boolean isHasPrevious;
+    boolean isHasPrevious;//
 
     int[] navigatepageNums;
 
@@ -69,8 +69,38 @@ public class Page4Navigator<T> {
         int calcNavigatepageNums[];
         int totalPages=getTotalPages();
         int num=getNumber();
+        //当总页数小于或等于导航页码数时
+        if(totalPages<=navigatePages){
+            navigatepageNums=new int[totalPages];
+            for (int i=0;i<totalPages;i++){
+                navigatepageNums[i]=i+1;
+            }
+        }else {
+            //当总页数大于导航页码数时
+            navigatepageNums=new int[navigatePages];
+            int startNum=num-navigatePages/2;
+            int endNum=num+navigatePages/2;
+            if (startNum<1){
+                startNum=1;
+                //最前navigatePages页
+                for (int i=0;i<navigatePages;i++){
+                    navigatepageNums[i]=startNum++;
+                }
+            }else if (endNum>totalPages){
+                //最后navigatePages页
+                endNum=totalPages;
+                for (int i=navigatePages-1;i>=0;i++){
+                    navigatepageNums[i]=endNum--;
+                }
+            }else {
+                //所有中间页
+                for (int i=0;i<navigatePages;i++){
+                    navigatepageNums[i]=startNum++;
+                }
+            }
 
-
+        }
+        this.navigatepageNums=navigatepageNums;
     }
     public Page<T> getPageFromJPA() {
         return pageFromJPA;

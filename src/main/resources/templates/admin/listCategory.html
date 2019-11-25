@@ -5,6 +5,8 @@
 <body>
 <div th:replace="include/admin/adminNavigator::html" ></div>
 <script>
+    /*当整个html加载好了之后执行*/
+    //vue用到的数据， uri表示访问哪个地址去获取数据，这里的值是 categories，和 CategoryController.java 相呼应
     $(function(){
         var data4Vue = {
             uri:'categories',
@@ -12,18 +14,28 @@
         };
 
         //ViewModel
+        //创建Vue对象，el 表示和本页面的 <div id="workingArea" > 元素绑定，data 表示vue 使用上面的data4Vue对象
         var vue = new Vue({
             el: '#workingArea',
             data: data4Vue,
+            //加载Vue对象成功之后会调用，成功的时候去调用 list() 函数
             mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
-                this.list();
+                this.list(0);
             },
+            //list 函数使用 data4Vue里的 uri作为地址，然后调用 axios.js 这个 ajax库，进行异步调用。 调用成功之后，把服务端返回的数据，保存在 vue.beans 上
             methods: {
                 list:function(){
-                    var url =  this.uri;
+                    var url =  this.uri+"?start="+start;
                     axios.get(url).then(function(response) {
-                        vue.beans = response.data;
+                        vue.pagination = response.data;
+                        vue.beans = response.data.content;
                     });
+                },
+                jump:function (page) {
+                    jump(page,vue);//定义在adminHeader.html 中
+                },
+                jumpByNumber:function (start) {
+                    jumpByNumber(start,vue);
                 }
             }
         });
@@ -72,6 +84,7 @@
             </tbody>
         </table>
     </div>
+    <div th:replace="include/admin/adminPage::html"></div>
 </div>
 <div th:replace="include/admin/adminFooter::html" ></div>
 </body>

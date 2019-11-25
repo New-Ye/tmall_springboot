@@ -2,8 +2,10 @@ package com.zxc.tmall.web;
 
 import com.zxc.tmall.pojo.Category;
 import com.zxc.tmall.service.CategoryService;
+import com.zxc.tmall.util.Page4Navigator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,10 +25,13 @@ public class CategoryController {
     CategoryService categoryService;
 
     @GetMapping("/categories")
-    public List<Category> list() throws Exception{
+    public Page4Navigator<Category> list(@RequestParam(value = "start",defaultValue = "0")int start,
+                               @RequestParam(value = "size",defaultValue = "5")int size) throws Exception{
         //对于categories 访问，会获取所有的 Category对象集合，并返回这个集合
         //这个集合，又会被自动转换为 JSON数组抛给浏览器。
-        return categoryService.list();
+        start=start<0?0:start;
+        Page4Navigator<Category> page = categoryService.list(start,size,5);
+        return page;
     }
 
 }
