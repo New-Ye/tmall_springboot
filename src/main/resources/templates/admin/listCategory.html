@@ -58,6 +58,25 @@
                         vue.file = null;
                     });
                 },
+                //删除分类
+                deleteBean:function (id) {
+                    //是否删除确认 checkDeleteLink()
+                    if (!checkDeleteLink())
+                        return;
+                    //组织url, 删除的规范是 /categoreis/123. 要这样写
+                    var url=this.uri+"/"+id;
+                    //通过axios 提交 delete 请求
+                    axios.delete(url).then(function (response) {
+                        //根据 REST 规范，当删除数据后，应该返回一个空字符串，所以会判断 0!=response.data.length
+                        if (0!=response.data.length){
+                            alert(response.data);
+                        }else {
+                            //当是空字符串的时候，调用 vue.list(0) 查询第一页
+                            vue.list(0);
+                        }
+                    });
+                },
+
                 //提供 getFile函数，当上传控件选中某个本地文件的时候，这个文件对象就会保存在data4Vue.file 上
                 getFile: function (event) {
                     this.file = event.target.files[0];

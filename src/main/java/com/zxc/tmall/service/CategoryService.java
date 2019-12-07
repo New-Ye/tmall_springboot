@@ -42,4 +42,18 @@ public class CategoryService {
         categoryDAO.save(bean);
     }
 
+    //删除分类
+    public void delete(int id){
+        categoryDAO.delete(id);
+    }
+    //获取地址栏id
+    public Category get(int id){
+        Category c = categoryDAO.findOne(id);
+        return c;
+    }
+    //编辑分类名和图片
+    public void update(Category bean){
+        categoryDAO.save(bean);
+    }
+
 }
