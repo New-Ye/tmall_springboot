@@ -12,6 +12,7 @@ import javax.persistence.*;
  * @Version 1.0
  **/
 
+
 //属性表
     @Entity
     @Table(name = "property")
