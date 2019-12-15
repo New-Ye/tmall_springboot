@@ -32,6 +32,7 @@ public class PropertyValueController {
         return propertyValues;
     }
 
+    @PutMapping("/propertyValues")
     public Object update(@RequestBody PropertyValue bean)throws Exception{
         propertyValueService.update(bean);
         return bean;

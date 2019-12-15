@@ -3,9 +3,87 @@
 <head th:include="include/admin/adminHeader::html('产品属性管理')" ></head>
 <body>
 <div th:replace="include/admin/adminNavigator::html" ></div>
+<script>
+    $(function(){
+        var pid = getUrlParms("pid");
+        var data4Vue = {
+            uri:'propertyValues',
+            beans: [],
+            product: '',
+            category:'',
+        };
 
+        //ViewModel
+        var vue = new Vue({
+            el: '#workingArea',
+            data: data4Vue,
+            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                this.getProduct(pid);
+                this.list();
+            },
+            methods: {
+                /*1. 通过产品管理界面的设置属性，跳到编辑页面：admin_propertyValue_edit
+                2. 获取 editPropertyValue.html 页面
+                3. html中的js代码获取到 pid
+                4. axios 通过 products/pid/propertyValues 提交ajax 请求
+                5. ProductValueController 的 list方法相应这个请求
+                6. list 方法中 首先进行初始化：propertyValueService.init(product); ， 然后把这个产品对应的属性值都取出来返回的浏览器
+                7. 浏览器拿到 json 数组， 遍历到视图上
+                */
+                list:function(){
+                    var url = "products/"+pid+"/"+ this.uri;
+                    axios.get(url).then(function(response) {
+                        vue.beans = response.data;
+                    });
+                },
+                getProduct:function(pid){
+                    var url = "products/"+pid;
+                    axios.get(url).then(function(response) {
+                        vue.product = response.data;
+                        vue.category = vue.product.category;
+                    })
+                },
+                /*1. 监听输入框上的keyup事件，调用Vue的update函数
+                2. 把边框的颜色修改为黄色，表示正在修改的意思
+                3. 通过axios.js 把修改后的数据提交到 PropertyValueController 的update 方法
+                4. 修改成功后返回被修改后的propertyValue json对象
+                5. 判断返回值的id是否一致，如果一致就表示修改成功了，即边框修改为绿色，否则修改为红色，表示没有修改成功。
+                */
+                update:function(bean){
+                    var url =  this.uri;
+                    var id = bean.id;
+                    $("#pvid"+bean.id).css("border","2px solid yellow");
+                    axios.put(url,bean).then(function(response) {
+                        if(bean.id==response.data.id)
+                            $("#pvid"+bean.id).css("border","2px solid green");
+                        else
+                            $("#pvid"+bean.id).css("border","2px solid red");
+                    });
+                }
+            }
 
+        });
+    });
 
+</script>
+
+<div id="workingArea" >
+    <ol class="breadcrumb">
+        <li><a href="admin_category_list">所有分类</a></li>
+        <li><a :href="'admin_product_list?cid='+category.id">{{category.name}}</a></li>
+        <li class="active">{{product.name}}</li>
+        <li class="active">产品属性管理</li>
+    </ol>
+
+    <div class="editPVDiv">
+        <div v-for="bean in beans" class="eachPV">
+            <span class="pvName" >{{bean.property.name}}</span>
+            <span class="pvValue"><input class="pvValue" :id="'pvid'+bean.id" type="text" v-model="bean.value" @keyup="update(bean)"></span>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+
+</div>
 
 <div th:replace="include/admin/adminFooter::html" ></div>
 </body>
