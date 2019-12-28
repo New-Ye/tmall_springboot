@@ -3,6 +3,7 @@ package com.zxc.tmall.service;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.zxc.tmall.dao.ProductDAO;
 import com.zxc.tmall.pojo.Category;
+import com.zxc.tmall.pojo.OrderItem;
 import com.zxc.tmall.pojo.Product;
 import com.zxc.tmall.util.Page4Navigator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,10 @@ public class ProductService {
     CategoryService categoryService;
     @Autowired
     ProductImageService productImageService;
+    @Autowired
+    ReviewService reviewService;
+    @Autowired
+    OrderItemService orderItemService;
 
     public void add(Product bean){
         productDAO.save(bean);
@@ -89,5 +94,27 @@ public class ProductService {
     //查询某个分类下的所有产品
     private List<Product> listByCategory(Category category) {
         return productDAO.findByCategoryOrderById(category);
+    }
+
+    //设置产品销量
+    public void setSaleAndReviewNumber(Product product){
+        int saleCount= orderItemService.getSaleCount(product);
+        product.setSaleCount(saleCount);
+        int reviewCount=reviewService.getCount(product);
+        product.setReviewCount(reviewCount);
+    }
+
+    //设置产品评论数量
+    public void setSaleAndReviewNumber(List<Product> products){
+        for (Product product:products){
+            setSaleAndReviewNumber(product);
+        }
+    }
+
+    public List<Product> search(String keyword, int start, int size) {
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(start, size, sort);
+        List<Product> products =productDAO.findByNameLike("%"+keyword+"%",pageable);
+        return products;
     }
 }

@@ -1,0 +1,76 @@
+<!--这个页面就是用来获取数据的。
+    1. 首选通过 getUrlParms 拿到 pid 的值
+    2. 然后通过 axios 访问 foreproduct/pid 地址，这会导致 ForeRESTController.product() 被调用并返回一个 Result对象
+    3. ForeRESTController.product() 里的3个数据集合，放在result的data上，所以就通过如下方式分别取出来放在了 vue对象对应的属性上：
+                            vue.p=result.data.product;
+                            vue.pvs=result.data.pvs;
+                            vue.reviews=result.data.reviews;
+    4. 接着就在后续的包含的3个页面挨个展开这些数据。
+        1. imgAndInfo.html单个图片和基本信息
+        2. productReview.html评价信息
+        3. productDetail.html详情图片-->
+<div th:fragment="html">
+    <script>
+        $(function(){
+            var pid = getUrlParms("pid");
+            var data4Vue = {
+                uri:'foreproduct',
+                p:'',
+                category:null,
+                firstProductImage:null,
+                pvs:[],
+                reviews:[],
+                showDetail:true,
+                showReview:false,
+                user:{name:'', password:''}
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    linkDefaultActions();
+                    this.load();
+                },
+                methods: {
+                    load:function(){
+                        var url =  this.uri+"/"+pid;
+                        axios.get(url).then(function(response) {
+                            var result = response.data;
+                            vue.p=result.data.product;
+                            vue.pvs=result.data.pvs;
+                            vue.reviews=result.data.reviews;
+
+                            vue.category = vue.p.category;
+                            vue.firstProductImage = vue.p.firstProductImage;
+                            vue.$nextTick(function(){
+                                imgAndInfoPageRegisterListeners(vue);
+                            })
+                        });
+
+                    },
+                    toggle2Detail:function(){
+                        this.showDetail=true;
+                        this.showReview=false;
+                    },
+                    toggle2Review:function(){
+                        this.showDetail=false;
+                        this.showReview=true;
+                    }
+                }
+            });
+
+
+        });
+    </script>
+
+    <title>模仿天猫官网 -- {{p.name}}</title>
+    <div class="categoryPictureInProductPageDiv">
+        <img v-if="category!=null" class="categoryPictureInProductPage" :src="'img/category/'+category.id+'.jpg'">
+    </div>
+    <div class="productPageDiv">
+        <div th:replace="include/fore/product/imgAndInfo::html" ></div>
+        <div th:replace="include/fore/product/productReview::html" ></div>
+        <div th:replace="include/fore/product/productDetail::html" ></div>
+    </div>
+</div>

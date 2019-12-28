@@ -36,6 +36,11 @@ public class UserService {
         return userDAO.findByName(name);
     }
 
+    //登录
+    public User get(String name,String password){
+        return userDAO.getByNameAndPassword(name,password);
+    }
+
     public Page4Navigator<User> list(int start,int size,int navigatePages){
         Sort sort=new Sort(Sort.Direction.DESC,"id");
         Pageable pageable=new PageRequest(start,size,sort);
@@ -43,6 +48,7 @@ public class UserService {
         return new Page4Navigator<>(pageFromJPA,navigatePages);
     }
 
+    //名称为重复，添加进数据库
     public void add(User user){
         userDAO.save(user);
     }

@@ -3,6 +3,7 @@ package com.zxc.tmall.service;
 import com.zxc.tmall.dao.OrderItemDAO;
 import com.zxc.tmall.pojo.Order;
 import com.zxc.tmall.pojo.OrderItem;
+import com.zxc.tmall.pojo.Product;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class OrderItemService {
         for (Order order : orders)
             fill(order);
     }
+    public void update(OrderItem orderItem) {
+        orderItemDAO.save(orderItem);
+    }
 
     public void fill(Order order) {
         List<OrderItem> orderItems = listByOrder(order);
@@ -39,10 +43,36 @@ public class OrderItemService {
         order.setTotal(total);
         order.setOrderItems(orderItems);
         order.setTotalNumber(totalNumber);
+        order.setOrderItems(orderItems);
     }
 
+    public void add(OrderItem orderItem) {
+        orderItemDAO.save(orderItem);
+    }
+    public OrderItem get(int id) {
+        return orderItemDAO.findOne(id);
+    }
+
+    public void delete(int id) {
+        orderItemDAO.delete(id);
+    }
+
+    //销售总数
+    public int getSaleCount(Product product) {
+        List<OrderItem> ois =listByProduct(product);
+        int result =0;
+        for (OrderItem oi : ois) {
+            if(null!=oi.getOrder())
+                if(null!= oi.getOrder() && null!=oi.getOrder().getPayDate())
+                    result+=oi.getNumber();
+        }
+        return result;
+    }
+
+    public List<OrderItem> listByProduct(Product product) {
+        return orderItemDAO.findByProduct(product);
+    }
     public List<OrderItem> listByOrder(Order order) {
         return orderItemDAO.findByOrderOrderByIdDesc(order);
     }
-
 }

@@ -5,6 +5,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName Product
@@ -38,6 +39,19 @@ public class Product {
     private Date createDate;
     @Transient
     private ProductImage firstProductImage;
+
+    //单个产品图片集合
+    @Transient
+    private List<ProductImage> productSingleImages;
+    @Transient
+    //详情产品图片集合
+    private List<ProductImage> productDetailImages;
+    @Transient
+    //销量
+    private int saleCount;
+    @Transient
+    //累计评价
+    private int reviewCount;
 
     public int getId() {
         return id;
@@ -110,4 +124,54 @@ public class Product {
         this.firstProductImage = firstProductImage;
     }
 
+    public List<ProductImage> getProductSingleImages() {
+        return productSingleImages;
+    }
+
+    public void setProductSingleImages(List<ProductImage> productSingleImages) {
+        this.productSingleImages = productSingleImages;
+    }
+
+    public List<ProductImage> getProductDetailImages() {
+        return productDetailImages;
+    }
+
+    public void setProductDetailImages(List<ProductImage> productDetailImages) {
+        this.productDetailImages = productDetailImages;
+    }
+
+    public int getSaleCount() {
+        return saleCount;
+    }
+
+    public void setSaleCount(int saleCount) {
+        this.saleCount = saleCount;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", category=" + category +
+                ", name='" + name + '\'' +
+                ", subTitle='" + subTitle + '\'' +
+                ", originalPrice=" + originalPrice +
+                ", promotePrice=" + promotePrice +
+                ", stock=" + stock +
+                ", createDate=" + createDate +
+                ", firstProductImage=" + firstProductImage +
+                ", productSingleImages=" + productSingleImages +
+                ", productDetailImages=" + productDetailImages +
+                ", saleCount=" + saleCount +
+                ", reviewCount=" + reviewCount +
+                '}';
+    }
 }
