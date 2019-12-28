@@ -3,6 +3,8 @@ package com.zxc.tmall.service;
 import com.zxc.tmall.dao.CategoryDAO;
 import com.zxc.tmall.pojo.Category;
 import java.util.List;
+
+import com.zxc.tmall.pojo.Product;
 import com.zxc.tmall.util.Page4Navigator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -54,6 +56,32 @@ public class CategoryService {
     //编辑分类名和图片
     public void update(Category bean){
         categoryDAO.save(bean);
+    }
+
+    //删除Product对象上的 分类
+    //因为在对分类做序列还转换为 json 的时候，会遍历里面的 products, 然后遍历出来的产品上，又会有分类，就开始无穷遍历
+    //要在前端业务上，没有通过产品获取分类的业务
+    public void removeCategoryFromProduct(List<Category> cs) {
+        for (Category category : cs) {
+            removeCategoryFromProduct(category);
+        }
+    }
+
+    public void removeCategoryFromProduct(Category category){
+        List<Product> products=category.getProducts();
+        if (null!=products){
+            for (Product product:products){
+                product.setCategory(null);
+            }
+        }
+        List<List<Product>> productsByRow=category.getProductsByRow();
+        if (null!=productsByRow){
+            for (List<Product>ps:productsByRow){
+                for (Product  p:ps){
+                    p.setCategory(null);
+                }
+            }
+        }
     }
 
 }
