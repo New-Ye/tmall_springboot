@@ -2,6 +2,7 @@ package com.zxc.tmall.service;
 
 
 import com.zxc.tmall.dao.ProductImageDAO;
+import com.zxc.tmall.pojo.OrderItem;
 import com.zxc.tmall.pojo.Product;
 import com.zxc.tmall.pojo.ProductImage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +58,10 @@ public class ProductImageService   {
         for (Product product : products)
             setFirstProdutImage(product);
     }
-
+    //在结算页面显示产品的第一张图片
+    public void setFirstProdutImagesOnOrderItems(List<OrderItem> ois) {
+        for (OrderItem orderItem : ois) {
+            setFirstProdutImage(orderItem.getProduct());
+        }
+    }
 }

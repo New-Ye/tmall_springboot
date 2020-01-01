@@ -4,6 +4,7 @@ import com.zxc.tmall.dao.OrderItemDAO;
 import com.zxc.tmall.pojo.Order;
 import com.zxc.tmall.pojo.OrderItem;
 import com.zxc.tmall.pojo.Product;
+import com.zxc.tmall.pojo.User;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,5 +75,9 @@ public class OrderItemService {
     }
     public List<OrderItem> listByOrder(Order order) {
         return orderItemDAO.findByOrderOrderByIdDesc(order);
+    }
+    //找到该用户是否将其添加到购物车，有则立即购买且数量加一，无则添加并购买（单件商品且数量为一）
+    public List<OrderItem> listByUser(User user) {
+        return orderItemDAO.findByUserAndOrderIsNull(user);
     }
 }
