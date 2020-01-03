@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
  * @Version 1.0
  **/
 @Service
+@CacheConfig(cacheNames="users")
 public class UserService {
     @Autowired
     UserDAO userDAO;
@@ -32,15 +33,17 @@ public class UserService {
         User user=getByName(name);
         return null!=user;
     }
-    private User getByName(String name) {
+    @Cacheable(key="'users-one-name-'+ #p0")
+    public User getByName(String name) {
         return userDAO.findByName(name);
     }
 
     //登录
+    @Cacheable(key="'users-one-name-'+ #p0 +'-password-'+ #p1")
     public User get(String name,String password){
         return userDAO.getByNameAndPassword(name,password);
     }
-
+    @Cacheable(key="'users-page-'+#p0+ '-' + #p1")
     public Page4Navigator<User> list(int start,int size,int navigatePages){
         Sort sort=new Sort(Sort.Direction.DESC,"id");
         Pageable pageable=new PageRequest(start,size,sort);
@@ -49,6 +52,7 @@ public class UserService {
     }
 
     //名称为重复，添加进数据库
+    @CacheEvict(allEntries=true)
     public void add(User user){
         userDAO.save(user);
     }

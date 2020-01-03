@@ -1,9 +1,11 @@
 package com.zxc.tmall.web;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-
 import javax.servlet.http.HttpSession;
+
 
 /**
  * @ClassName ForePageController
@@ -81,9 +83,13 @@ public class ForePageController {
     public String searchResult(){
         return "fore/search";
     }
+    ////退出的时候，通过 subject.logout 退出。////
     @GetMapping("/forelogout")
-    public String logout(HttpSession session) {
-        session.removeAttribute("user");
+    public String logout() {
+        Subject subject = SecurityUtils.getSubject();
+        if(subject.isAuthenticated())
+            subject.logout();
         return "redirect:home";
     }
+    ////退出的时候，通过 subject.logout 退出。////
 }

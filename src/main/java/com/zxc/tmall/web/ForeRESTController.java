@@ -5,14 +5,20 @@ import com.zxc.tmall.pojo.*;
 import com.zxc.tmall.service.*;
 import com.zxc.tmall.util.Result;
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.crypto.SecureRandomNumberGenerator;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.HtmlUtils;
 
 import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName ForeRESTController
@@ -54,6 +60,8 @@ public class ForeRESTController {
         return cs;
     }
 
+    //注册时候的时候，会通过随机方式创建盐， 并且加密算法采用 "md5", 除此之外还会进行 2次加密。
+    //这个盐，如果丢失了，就无法验证密码是否正确了，所以会数据库里保存起来
     @PostMapping("/foreregister")
     public Object register(@RequestBody User user) {
         String name =  user.getName();
@@ -66,6 +74,16 @@ public class ForeRESTController {
             String message ="用户名已经被使用,不能使用";
             return Result.fail(message);
         }
+        //////加密-开始//////
+        String salt=new SecureRandomNumberGenerator().nextBytes().toString();
+        int times=2;
+        String algorithmName="md5";
+
+        String encodedPassword=new SimpleHash(algorithmName,password,salt,times).toString();
+
+        user.setSalt(salt);
+        user.setPassword(encodedPassword);
+        //////加密-结束//////
         userService.add(user);
         return Result.success();
     }
@@ -74,16 +92,19 @@ public class ForeRESTController {
     public Object login(@RequestBody User userParam, HttpSession session) {
         String name =  userParam.getName();
         name = HtmlUtils.htmlEscape(name);
-
-        User user =userService.get(name,userParam.getPassword());
-        if(null==user){
+        /////登陆的时候， 通过 Shiro的方式进行校验//////
+        Subject subject = SecurityUtils.getSubject();
+        UsernamePasswordToken token=new UsernamePasswordToken(name,userParam.getPassword());
+        try {
+            subject.login(token);
+            User user=userService.getByName(name);
+            session.setAttribute("user",user);
+            return Result.success();
+        }catch (AuthenticationException e){
             String message ="账号密码错误";
             return Result.fail(message);
         }
-        else{
-            session.setAttribute("user", user);
-            return Result.success();
-        }
+        /////登陆的时候， 通过 Shiro的方式进行校验//////
     }
 
     @GetMapping("/foreproduct/{pid}")
@@ -112,13 +133,14 @@ public class ForeRESTController {
         //通过 Result 把这个 map 返回到浏览器去
         return Result.success(map);
     }
-
+    //前台判断是否登录(shiro)
     @GetMapping("forecheckLogin")
     public Object checkLogin( HttpSession session) {
-        User user =(User)session.getAttribute("user");
-        if(null!=user)
+        Subject subject=SecurityUtils.getSubject();
+        if(subject.isAuthenticated())
             return Result.success();
-        return Result.fail("未登录");
+        else
+            return Result.fail("未登录");
     }
 
     //按价格，人气，上架人气等排序
