@@ -2,6 +2,7 @@ package com.zxc.tmall.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.zxc.tmall.dao.ProductDAO;
+import com.zxc.tmall.es.ProductESDAO;
 import com.zxc.tmall.pojo.Category;
 import com.zxc.tmall.pojo.OrderItem;
 import com.zxc.tmall.pojo.Product;
@@ -40,18 +41,24 @@ public class ProductService {
     ReviewService reviewService;
     @Autowired
     OrderItemService orderItemService;
-
+    @Autowired
+    ProductESDAO productESDAO;
+    /*增加，删除，修改的时候，除了通过 ProductDAO 对数据库产生影响之外，
+    还要通过 ProductESDAO 同步到 elasticsearch里*/
     @CacheEvict(allEntries=true)
     public void add(Product bean){
         productDAO.save(bean);
+        productESDAO.save(bean);
     }
     @CacheEvict(allEntries=true)
     public void delete(int id){
         productDAO.delete(id);
+        productESDAO.delete(id);
     }
     @CacheEvict(allEntries=true)
     public void update(Product bean){
         productDAO.save(bean);
+        productESDAO.save(bean);
     }
     @Cacheable(key="'products-one-'+ #p0")
     public Product get(int id){
@@ -121,5 +128,17 @@ public class ProductService {
         Pageable pageable = new PageRequest(start, size, sort);
         List<Product> products =productDAO.findByNameLike("%"+keyword+"%",pageable);
         return products;
+    }
+
+    //以前查询是模糊查询，现在通过 ProductESDAO 到 elasticsearch 中进行查询了
+    private void initDatabase2ES() {
+        Pageable pageable = new PageRequest(0, 5);
+        Page<Product> page =productESDAO.findAll(pageable);
+        if(page.getContent().isEmpty()) {
+            List<Product> products= productDAO.findAll();
+            for (Product product : products) {
+                productESDAO.save(product);
+            }
+        }
     }
 }
